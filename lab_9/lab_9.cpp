@@ -164,19 +164,21 @@ void parallelQuickSort(std::vector<int>& arr, int low, int high, int depth) {
     if (low < high) {
         int pi = partition(arr, low, high);
 
-        #pragma omp parallel if(depth > 0)
-        {
-            #pragma omp single nowait
+        if (depth > 0) {
+            #pragma omp parallel sections
             {
-                #pragma omp task
+                #pragma omp section
                 {
                     parallelQuickSort(arr, low, pi - 1, depth - 1);
                 }
-                #pragma omp task
+                #pragma omp section
                 {
                     parallelQuickSort(arr, pi + 1, high, depth - 1);
                 }
             }
+        }
+        else {
+            parallelBubbleSort(arr);
         }
     }
 }
@@ -295,11 +297,14 @@ int main() {
     std::vector<int> arraySizes = { 100, 1000, 10000 }; // Размеры массивов
 
     compareBubbleSort(arraySizes, threadCounts);
-
-    threadCounts = { 2, 4, 8 }; // Количество потоков
     arraySizes = { 100, 1000, 10000, 100000, 1000000 }; // Размеры массивов
-    compareMergeSort(arraySizes, threadCounts);
+
     compareQuickSort(arraySizes, threadCounts);
+
+    //threadCounts = { 2, 4, 8 }; // Количество потоков
+    //arraySizes = { 100, 1000, 10000, 100000, 1000000 }; // Размеры массивов
+    //compareMergeSort(arraySizes, threadCounts);
+    //compareQuickSort(arraySizes, threadCounts);
 
     return 0;
 }
